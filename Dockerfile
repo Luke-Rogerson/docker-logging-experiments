@@ -16,7 +16,6 @@ RUN echo \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 RUN apt-get update
 RUN apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
-RUN service docker start
 
 # EC2 instances usually have locale settings
 RUN locale-gen en_US.UTF-8 && update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
@@ -27,14 +26,11 @@ ENV LANG=en_US.UTF-8 \
 # Needed to allow crons to run in the container
 RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d
 
-# Use non-root user (Docker by default uses root)
-RUN useradd -ms /bin/bash ubuntu && \
-  echo "ubuntu ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/ubuntu && \
-  chmod 0440 /etc/sudoers.d/ubuntu
-USER ubuntu
-
 WORKDIR /home/ubuntu
 
-COPY --chown=ubuntu:ubuntu src .
+COPY . .
 
 CMD ["/bin/bash"]
+
+# https://bobcares.com/blog/error-couldnt-connect-to-docker-daemon/
+# sudo service docker start
